@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Controle de Acesso FUX",
+  "version": "1.0",
+  "description": "Bloqueia sites e libera com chave verificada via Supabase.",
+  "permissions": [
+    "storage",
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["admin.html", "admin.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+javascript:(function(){function b64(s){return btoa(unescape(encodeURIComponent(s)))}var u=prompt("Digite seu nome de usuário:"),p=prompt("Digite sua senha:");if(u&&p){localStorage.setItem("login_user",b64(u));localStorage.setItem("login_pass",b64(p));alert("Credenciais criptografadas e salvas!")}else{alert("Operação cancelada.")}})();

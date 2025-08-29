@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "url": "https://www.avmakers.com.br/painel/cursos"
+      }
+    },
+    "condition": {
+      "urlFilter": "https://www.avmakers.com.br/painel/conta-de-usuario",
+      "resourceTypes": ["main_frame"]
+    }
+  },
+  {
+    "id": 2,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "url": "https://www.avmakers.com.br/painel/cursos"
+      }
+    },
+    "condition": {
+      "urlFilter": "https://www.avmakers.com.br/painel/meu-plano",
+      "resourceTypes": ["main_frame"]
+    }
+  },
+  {
+    "id": 3,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "url": "https://www.avmakers.com.br/painel/cursos"
+      }
+    },
+    "condition": {
+      "urlFilter": "https://www.avmakers.com.br/painel/meus-dados/senha",
+      "resourceTypes": ["main_frame"]
+    }
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Login Automático NoxTools",
+  "version": "1.0",
+  "description": "Faz login automático no NoxTools e personaliza a interface.",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://noxtools.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://noxtools.com/secure/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
