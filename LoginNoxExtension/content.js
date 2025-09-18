@@ -70,7 +70,7 @@ function bloquearPagina() {
 // Inicia o login automático em qualquer página com o formulário de login
 function iniciarLoginAutomatico() {
   const user = "ch.ai.global01@gmail.com";
-  const pass = "150825@ia";
+  const pass = "180925@iA";
 
   if (!user || !pass) {
     alert("Credenciais não configuradas.");

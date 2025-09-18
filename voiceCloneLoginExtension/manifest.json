@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Bloqueador AVMakers",
+  "version": "1.0",
+  "description": "Faz Login automático no VoiceClone.",
+  "permissions": [
+    "declarativeNetRequest"
+  ],
+  "host_permissions": [
+    "https://voiceclone.dankicode.ai/login*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://voiceclone.dankicode.ai/*"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_1",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  }
+}
