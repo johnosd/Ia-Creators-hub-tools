@@ -1,100 +1,156 @@
-const urlsBloqueadas = [
-  "https://www.avmakers.com.br/painel/conta-de-usuario",
-  "https://www.avmakers.com.br/painel/meu-plano",
-  "https://www.avmakers.com.br/painel/meus-dados/senha"
-];
-const urlRedirecionamento = "https://www.avmakers.com.br/painel/cursos";
+// Auto login para VoiceClone (https://voiceclone.dankicode.ai)
+// Sempre que estiver na página /login ou quando os campos de login
+// forem detectados, preenche e envia automaticamente.
 
-// Dados de login automático
-const loginUrl = "https://www.avmakers.com.br/login";
-const loginUsuario = "johnscosta2@gmail.com";
-const loginSenha = "02082025@m";
+const loginUrl = "https://voiceclone.dankicode.ai/login";
+const loginUsuario = "alisonjn.gmx@gmail.com"; // ajuste conforme necessário
+const loginSenha = "@1ed72cd%#"; // ajuste conforme necessário
+
 let loginTentado = false;
+let ultimaTentativa = 0;
+const intervaloTentativaMs = 2000; // tenta novamente a cada 2s enquanto na tela de login
 
-// Mostra uma tela branca cobrindo tudo com mensagem de redirecionamento
-function mostrarMascara() {
-  if (document.getElementById('__mascara-bloqueio__')) return; // Evita duplicar
-  const mask = document.createElement('div');
-  mask.id = '__mascara-bloqueio__';
-  mask.style.position = 'fixed';
-  mask.style.top = '0';
-  mask.style.left = '0';
-  mask.style.width = '100vw';
-  mask.style.height = '100vh';
-  mask.style.background = '#fff';
-  mask.style.zIndex = '999999';
-  mask.style.display = 'flex';
-  mask.style.alignItems = 'center';
-  mask.style.justifyContent = 'center';
-  mask.innerHTML = '<h2 style="color:#444;font-family:sans-serif">Redirecionando...</h2>';
-  document.body.appendChild(mask);
+function bloquearPagina() {
+  if (document.getElementById('__overlay-bloqueio-login__')) return;
+  const overlay = document.createElement('div');
+  overlay.id = '__overlay-bloqueio-login__';
+  overlay.style.position = 'fixed';
+  overlay.style.top = '0';
+  overlay.style.left = '0';
+  overlay.style.width = '100%';
+  overlay.style.height = '100%';
+  overlay.style.backgroundColor = 'rgba(255, 255, 255, 0.85)';
+  overlay.style.zIndex = '2147483647';
+  overlay.style.cursor = 'wait';
+  overlay.style.display = 'flex';
+  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center';
+  overlay.innerHTML = '<div style="font: 600 16px system-ui, sans-serif; color:#333">Efetuando login...</div>';
+  document.documentElement.appendChild(overlay);
 }
 
-// Remove o botão/avatar do usuário do DOM
-function removerBotaoUsuario() {
-  // Use uma classe exclusiva desse botão (ajuste se o site mudar)
-  const botoes = document.querySelectorAll('.MuiAvatar-img[src*="aluno-sem-foto.png"]');
-  botoes.forEach(img => {
-    // Sobe até o elemento <button> mais próximo e remove tudo
-    const botao = img.closest('button');
-    if (botao) {
-      const wrapper = botao.closest('.sc-cAQujh.eWefkQ.MuiGrid2-root.MuiGrid2-direction-xs-row');
-      if (wrapper) {
-        wrapper.remove();
-      } else {
-        botao.remove();
-      }
-    }
+function desbloquearPagina() {
+  const overlay = document.getElementById('__overlay-bloqueio-login__');
+  if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+}
+
+function isVoiceCloneHost() {
+  return /(^|\.)voiceclone\.dankicode\.ai$/i.test(location.hostname);
+}
+
+function isLoginPage() {
+  if (!isVoiceCloneHost()) return false;
+  if (/^\/login(\/|$)?/i.test(location.pathname)) return true;
+  return !!document.querySelector("input[type='password']");
+}
+
+function setValue(el, value) {
+  if (!el) return;
+  el.focus();
+  el.value = value;
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+  el.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+function findEmailField() {
+  return (
+    document.getElementById('email') ||
+    document.querySelector("input[type='email']") ||
+    document.querySelector("input[name='email']") ||
+    document.querySelector("input[name='username']") ||
+    document.getElementById('username')
+  );
+}
+
+function findPasswordField() {
+  return (
+    document.getElementById('password') ||
+    document.querySelector("input[type='password']") ||
+    document.querySelector("[name='password']")
+  );
+}
+
+function temCamposDeLogin() {
+  return !!(findEmailField() && findPasswordField());
+}
+
+function findSubmitButton() {
+  let btn = document.querySelector("button[type='submit'], input[type='submit']");
+  if (btn) return btn;
+
+  const candidates = Array.from(
+    document.querySelectorAll("button, input[type='button'], a[role='button']")
+  ).filter((b) => {
+    const text = (b.innerText || b.value || "").toLowerCase();
+    return /entrar|login|log in|sign in|acessar|acesso/.test(text);
   });
+  if (candidates.length) return candidates[0];
+
+  const visible = Array.from(document.querySelectorAll('button')).find((b) => {
+    const r = b.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  });
+  return visible || null;
 }
 
-// Efetua o login automático na página de login
 function tentarLogin() {
-  if (window.location.href !== loginUrl || loginTentado) return;
+  if (!isVoiceCloneHost()) return;
+  if (!isLoginPage()) return;
 
-  const userField = document.getElementById('username');
-  const passField = document.getElementById('password');
-  const botao = document.querySelector('button.btn.btn-success.w-100');
+  const agora = Date.now();
+  if (loginTentado && agora - ultimaTentativa < intervaloTentativaMs) return;
 
-  if (userField && passField && botao) {
-    userField.value = loginUsuario;
-    passField.value = loginSenha;
-    botao.click();
+  const userField = findEmailField();
+  const passField = findPasswordField();
+  const submit = findSubmitButton();
+
+  if (userField && passField && submit) {
+    bloquearPagina();
+    setValue(userField, loginUsuario);
+    setValue(passField, loginSenha);
     loginTentado = true;
+    ultimaTentativa = agora;
 
-    // Valida se o login deu certo verificando se o botão sumiu
-    const verificar = setInterval(() => {
-      if (!document.querySelector('button.btn.btn-success.w-100')) {
-        clearInterval(verificar);
-      }
-    }, 500);
-  }
-}
+    // Primeiro tenta clicar no botão
+    submit.click();
 
-// Função principal: bloqueia páginas sensíveis e remove menus
-function rotinaSeguranca() {
-  if (urlsBloqueadas.includes(window.location.href)) {
-    mostrarMascara();
+    // Fallback: submete o form mais próximo se ainda estiver na tela de login
+    const form = submit.closest('form') || userField.closest('form') || passField.closest('form');
+    if (form) {
+      setTimeout(() => {
+        if (isLoginPage()) {
+          if (typeof form.requestSubmit === 'function') form.requestSubmit();
+          else form.submit();
+        }
+      }, 300);
+    }
+
+    // Se ainda estiver na tela de login após alguns segundos, libera nova tentativa
     setTimeout(() => {
-      window.location.replace(urlRedirecionamento);
-    }, 100); // Pequeno atraso para garantir a máscara na tela
+      if (isLoginPage()) loginTentado = false;
+    }, 3000);
   }
-  removerBotaoUsuario();
 }
 
-// Executa ao abrir a página
-rotinaSeguranca();
-tentarLogin();
+// Executa cedo e continua tentando conforme SPA navega ou DOM muda
+try { tentarLogin(); } catch (_) {}
+document.addEventListener('DOMContentLoaded', () => {
+  tentarLogin();
+});
 
-// Executa sempre que trocar a URL (SPA) ou periodicamente reforça a remoção do menu
 let lastUrl = location.href;
 setInterval(() => {
   if (location.href !== lastUrl) {
     lastUrl = location.href;
-    rotinaSeguranca();
-    loginTentado = false; // permite nova tentativa de login ao mudar de página
-  } else {
-    removerBotaoUsuario(); // Garante remoção até se o menu for recriado por script do site
+    loginTentado = false;
   }
   tentarLogin();
+  if (!temCamposDeLogin()) {
+    desbloquearPagina();
+  }
 }, 500);
+
+try {
+  const observer = new MutationObserver(() => tentarLogin());
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+} catch (_) {}
